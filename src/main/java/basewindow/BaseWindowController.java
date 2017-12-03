@@ -8,7 +8,7 @@ package basewindow;
 import boxes.BoxModel;
 import boxes.BoxNode;
 import dot.DotModel;
-import dot.DotNode;
+import dot.DotView;
 import edge.jobdotedge.JobDotEdgeModel;
 import edge.jobdotedge.JobDotEdgeNode;
 import javafx.collections.ListChangeListener;
@@ -57,14 +57,6 @@ public class BaseWindowController extends Stage {
         model.getObservableBoxes().add(box);
         interactivePane.getChildren().add(boxnode);
         
-        /*JobDotEdgeModel jbm=new JobDotEdgeModel();
-        //jbm.setParentBox(model);
-        JobDotEdgeNode jbn=new JobDotEdgeNode(jbm);
-        interactivePane.getChildren().add(jbn);*/
-        
-        /* DotModel dm=new DotModel();
-        DotNode dn=new DotNode(dm);
-        interactivePane.getChildren().add(dn);*/
     }
     
     
@@ -82,7 +74,22 @@ public class BaseWindowController extends Stage {
         model.getObservableBoxes().addListener(new ListChangeListener<BoxModel>(){
             @Override
             public void onChanged(ListChangeListener.Change<? extends BoxModel> c) {
-                System.out.println("BaseWindowController.setModel().ListChanger.onChanged()");
+                while(c.next()){
+                    if(c.wasAdded()){
+                        System.out.println("BaseWindowController.setModel().ListChanger.onChanged() added "+c.getAddedSize()+" ");
+                        for(BoxModel b:c.getAddedSubList()){
+                            System.out.println("Added "+b.getId());
+                        }
+                    }
+                    if(c.wasRemoved()) {
+                        System.out.println("BaseWindowController.setModel().ListChanger.onChanged() removed"+c.getRemovedSize()+" ");
+                        for(BoxModel b:c.getRemoved()){
+                            System.out.println("Removed "+b.getId());
+                        }
+                        
+                    }
+                }
+                
             }
             
         });

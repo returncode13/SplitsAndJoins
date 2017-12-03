@@ -22,7 +22,7 @@ import javafx.scene.shape.StrokeLineCap;
  *
  * @author sharath nair <sharath.nair@polarcus.com>
  */
-public class DotNode extends Circle{
+public class DotView extends Circle{
     private  DotModel model;
     private DotController  controller;
     private AnchorPane interactivePane;
@@ -30,7 +30,7 @@ public class DotNode extends Circle{
     private final URL location;
     
     
-    public DotNode(DotModel item,AnchorPane interactivePane){
+    public DotView(DotModel item,AnchorPane interactivePane){
         this.location=getClass().getClassLoader().getResource("fxml/dot_1.fxml"); 
         this.interactivePane=interactivePane;
           

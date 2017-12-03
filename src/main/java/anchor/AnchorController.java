@@ -54,6 +54,10 @@ public class AnchorController {
         model=item;
         
     }
+    
+    public AnchorModel getModel(){
+        return this.model;
+    }
 
     void setView(AnchorNode nd,AnchorPane interactivePane) {
         node=nd;
@@ -68,26 +72,44 @@ public class AnchorController {
         model.getY().bind(node.centerYProperty());
         
        node.setOnMousePressed(e->{
+        //   System.out.println("anchor.AnchorController.setView() Mouse Pressed");
             dragDelta.x=node.getCenterX()-e.getX();
             dragDelta.y=node.getCenterY()-e.getY();
+           e.consume();
         });
         
-        node.setOnMouseDragged(e->{
-            double newX=e.getX()+dragDelta.x;
-            if(newX>0 && newX<AnchorController.this.interactivePane.getScene().getWidth()){
-                node.setCenterX(newX);
-            }
-        double newY=e.getY()+dragDelta.y;
-            if(newY>0 && newY<AnchorController.this.interactivePane.getScene().getHeight()){
-                node.setCenterY(newY);
-            }
+       node.setOnMouseDragged(e->{
+     
+     //  System.out.println("anchor.AnchorController.setView() Mouse Dragged");
+       double newX=e.getX()+dragDelta.x;
+       if(newX>0 && newX<AnchorController.this.interactivePane.getScene().getWidth()){
+       node.setCenterX(newX);
+       }
+       double newY=e.getY()+dragDelta.y;
+       if(newY>0 && newY<AnchorController.this.interactivePane.getScene().getHeight()){
+       node.setCenterY(newY);
+       }
+       
+       e.consume();
+       });
+       
+        
+         node.setOnDragDetected(e->{
+      //       System.out.println("anchor.AnchorController.setView() DragDetected");
+            node.startFullDrag();
+        e.consume();
         });
-        
-        
-    }
+            
+      //   node.setOnDragDone(e->{System.out.println("anchor.AnchorController.setView() DragDone");});
+      //   node.setOnDragDropped(e->{System.out.println("anchor.AnchorController.setView() DragDropped");});
+        }
+    
+   
     
     private class Delta{
         double x,y;
     }
+    
+    
     
 }

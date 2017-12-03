@@ -5,11 +5,16 @@
  */
 package dot;
 
+import anchor.AnchorNode;
+import boxes.BoxModel;
 import dot.formulaField.FormulaFieldModel;
 import dot.formulaField.FormulaFieldNode;
 import edge.dotjobedge.DotJobEdgeModel;
-import edge.dotjobedge.DotJobEdgeNode;
+import edge.dotjobedge.DotJobEdgeView;
+import edge.parentchildedge.ParentChildEdgeModel;
+import edge.parentchildedge.ParentChildEdgeView;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.ResourceBundle;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -31,7 +36,11 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextBoundsType;
 import javafx.stage.Stage;
 
 /**
@@ -39,8 +48,8 @@ import javafx.stage.Stage;
  * @author sharath nair <sharath.nair@polarcus.com>
  */
 public class DotController extends Stage{
-    private DotModel dotmodel;
-    private DotNode dotnode;
+    private DotModel model;
+    private DotView node;
     private AnchorPane interactivePane;
     
     final Delta dragDelta=new Delta();
@@ -49,68 +58,99 @@ public class DotController extends Stage{
     
     @FXML
     private Circle dot;
-
-   
     
+     
     void setModel(DotModel mod){
-        dotmodel=mod;
-      
+        model=mod;
+        model.getStatus().addListener(new ChangeListener<String>(){
+            @Override
+            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+               updateColor();
+            }
+
+            
+        });
         
     }
 
-    void setView(DotNode nd,AnchorPane interactivePane) {
+    void setView(DotView nd,AnchorPane interactivePane) {
         this.interactivePane=interactivePane;
-        dotnode=nd;
-        dotnode.setRadius(10);
-        dotnode.setCenterX(10.0);
-        dotnode.setCenterY(10.0);
+        node=nd;
+        node.setRadius(10);
+        node.setCenterX(10.0);
+        node.setCenterY(10.0);
         
-        dotmodel.getX().bind(dotnode.centerXProperty());
-        dotmodel.getY().bind(dotnode.centerYProperty());
+        model.getX().bind(node.centerXProperty());
+        model.getY().bind(node.centerYProperty());
         
          MenuItem addAChildJob=new MenuItem("+link to a job");
         MenuItem deleteThisJob=new MenuItem("-delete this dot");
-        dotnode.setOnContextMenuRequested(new EventHandler<ContextMenuEvent>(){
+        node.setOnContextMenuRequested(new EventHandler<ContextMenuEvent>(){
             @Override
             public void handle(ContextMenuEvent event) {
-                 menu.show(dotnode, event.getScreenX(), event.getScreenY());
+                 menu.show(node, event.getScreenX(), event.getScreenY());
             }
         });
         addAChildJob.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                DotJobEdgeModel djm=new DotJobEdgeModel();
-                djm.setDotModel(dotmodel);
-                DotJobEdgeNode djn=new DotJobEdgeNode(djm,dotnode,DotController.this.interactivePane);
-                DotController.this.interactivePane.getChildren().add(djn);
+                if(model.enableFurtherLinks() && (model.isNjs()||model.isSplit())){
+                    DotJobEdgeModel djm=new DotJobEdgeModel();
+                djm.setDotModel(model);
+                DotJobEdgeView djn=new DotJobEdgeView(djm,node,DotController.this.interactivePane);
+                }else{
+                    System.out.println(".handle(): Split Operation disallowed ");
+                }
                 
-                //dotnode.getChildren().add(0,djn);
             }
         });
         menu.getItems().addAll(addAChildJob,deleteThisJob);
-        
-        
-        dotnode.setOnMousePressed(e->{
-            dragDelta.x=dotnode.getCenterX()-e.getX();
-            dragDelta.y=dotnode.getCenterY()-e.getY();
-        });
-        
-        dotnode.setOnMouseDragged(e->{
-            double newX=e.getX()+dragDelta.x;
-            if(newX>0 && newX<DotController.this.interactivePane.getScene().getWidth()){
-                dotnode.setCenterX(newX);
+     
+        /**
+         * Allow a join only if join==true
+         * 
+         */
+        node.setOnMouseDragReleased(e->{
+           AnchorNode droppedAnchor=(AnchorNode) e.getGestureSource();
+            if(droppedAnchor.getParent() instanceof ParentChildEdgeView){
+            System.out.println("dot.DotController.setView() NJS: "+model.isNjs()+" Join: "+model.isJoin()+" Split: "+model.isSplit()+" Enabled: "+model.enableFurtherLinks());
+            if(model.enableFurtherLinks() && (model.isNjs()||model.isJoin())){
+               
+               
+               
+                
+                if(droppedAnchor.getParent() instanceof ParentChildEdgeView){
+                    ParentChildEdgeView parentNode=((ParentChildEdgeView)droppedAnchor.getParent());
+                    
+                    ParentChildEdgeModel parentModel=parentNode.getController().getModel();
+                    parentModel.setDotModel(model);                      //Share this dot
+                    BoxModel childFromDot=(new ArrayList<>(model.getChildren())).get(0);    //the ONLY child associated with the dot model
+                    parentModel.setChildBoxModel(childFromDot);
+                    
+                    BoxModel parentConnectingToDot=parentModel.getParentBoxModel();   //get the parent job connecting to this Dot
+                    //model.addToParents(parentConnectingToDot);                      //add it to the Dots list of parents. (which will now be >1)
+                    
+                    parentConnectingToDot.addChild(childFromDot);
+                    childFromDot.addParent(parentConnectingToDot);
+                    parentNode.setDropReceived(true);
+                    droppedAnchor.centerXProperty().bind(node.centerXProperty());
+                    droppedAnchor.centerYProperty().bind(node.centerYProperty());
+                }
+            }else{
+                System.out.println("dot.DotController.setView(): Join Operation disallowed");
             }
-        double newY=e.getY()+dragDelta.y;
-            if(newY>0 && newY<DotController.this.interactivePane.getScene().getHeight()){
-                dotnode.setCenterY(newY);
-            }
+            
+            
+        }
         });
-        
-       
     }
 
     
-    
+    private void updateColor() {
+            if(model.getStatus().get().equals(DotModel.NJS))node.setFill(Color.DIMGRAY);
+            if(model.getStatus().get().equals(DotModel.JOIN))node.setFill(Color.DARKORCHID);
+            if(model.getStatus().get().equals(DotModel.SPLIT))node.setFill(Color.NAVY);
+    }
     
     
     

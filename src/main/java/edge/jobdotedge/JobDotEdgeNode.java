@@ -7,7 +7,7 @@ package edge.jobdotedge;
 
 import anchor.AnchorNode;
 import boxes.BoxNode;
-import dot.DotNode;
+import dot.DotView;
 import java.io.IOException;
 import java.net.URL;
 import javafx.fxml.FXMLLoader;

@@ -3,56 +3,50 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package anchor;
+package edge.parentchildedge;
 
+import boxes.BoxNode;
 import java.io.IOException;
 import java.net.URL;
-import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.JavaFXBuilderFactory;
 import javafx.geometry.Point2D;
-import javafx.scene.Cursor;
-import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.shape.Circle;
 
 /**
  *
  * @author sharath nair <sharath.nair@polarcus.com>
  */
-public class AnchorNode extends Circle{
-   private  AnchorModel model;
-    private AnchorController  controller;
-    private  AnchorPane interactivePane;
-    
+public class ParentChildEdgeView extends AnchorPane{
+    private  ParentChildEdgeModel model;
+    private ParentChildEdgeController  controller;
+    private BoxNode parentBoxNode;
+    private AnchorPane interactivePane;
      private FXMLLoader fXMLLoader;
     private final URL location;
-   
+    private boolean dropReceived;
     
     
-    public AnchorNode(AnchorModel item,AnchorPane interactivePane){
-        this.location=getClass().getClassLoader().getResource("fxml/anchor_1.fxml"); 
+    public ParentChildEdgeView(ParentChildEdgeModel item,BoxNode parentNode, AnchorPane interactivePane){
+        this.location=getClass().getClassLoader().getResource("fxml/parentchildedge.fxml"); 
+       this.parentBoxNode=parentNode;
        this.interactivePane=interactivePane;
           
            fXMLLoader=new FXMLLoader();
               
             fXMLLoader.setLocation(location);
              
-           // fXMLLoader.setRoot(this);
+         
             fXMLLoader.setBuilderFactory(new JavaFXBuilderFactory());
            
             try{
                 fXMLLoader.load(location.openStream());
            
-                controller=(AnchorController)fXMLLoader.getController();
+                controller=fXMLLoader.getController();
              
-               // setId(UUID.randomUUID().toString());
-                //setId((new UID()).toString());
-                
-                
+              
                 controller.setModel(item);
-                controller.setView(this,this.interactivePane) ;
+                controller.setView(this,parentBoxNode,this.interactivePane);
                
                 
             }catch(IOException e){
@@ -61,7 +55,7 @@ public class AnchorNode extends Circle{
     }
     
     
-    /*
+     /*
     for drag purposes of the node
     */
     public void relocateToPoint(Point2D xx){
@@ -74,13 +68,16 @@ public class AnchorNode extends Circle{
         
     }
 
-    public AnchorController getController() {
+    public ParentChildEdgeController getController() {
         return controller;
     }
 
+    public void setDropReceived(boolean b) {
+        this.dropReceived = b;
+    }
     
+    public boolean getDropReceived(){
+        return this.dropReceived;
+    }
     
-    
-    
-
 }

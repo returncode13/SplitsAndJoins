@@ -3,18 +3,20 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package edge.dotjobedge;
+package edge.parentchildedge;
 
 import anchor.AnchorModel;
 import anchor.AnchorNode;
 import boxes.BoxNode;
-import dot.DotModel;
-import dot.DotView;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.When;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
+
 import javafx.fxml.FXML;
+import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.CubicCurve;
@@ -24,19 +26,18 @@ import javafx.scene.shape.StrokeLineCap;
  *
  * @author sharath nair <sharath.nair@polarcus.com>
  */
-public class DotJobEdgeController {
-    private BoxNode endnode;
-    private DotJobEdgeModel model;
-    private DotJobEdgeView node;
-    private DotModel dotmodel;
-    private DotView dotnode;
-    private AnchorModel anchorModel;
-    private AnchorNode anchor;
+public class ParentChildEdgeController {
     private AnchorPane interactivePane;
+    private BoxNode boxnode;
+    private ParentChildEdgeModel model;
+    private ParentChildEdgeView node;
     
-    final Delta dragDelta=new Delta(); 
-     
-     /**
+    private AnchorModel childAnchorModel;
+    private AnchorNode childAnchor;
+    
+    
+    final Delta dragDelta=new Delta();
+      /**
      * 
      * fields used for constraining the cubic curve
      * We do this so that the Dots position lies on the midpoint of the curves start and end x,y coords
@@ -48,55 +49,44 @@ public class DotJobEdgeController {
     private final DoubleProperty mControlDirX1=new SimpleDoubleProperty();
     private final DoubleProperty mControlDirY1=new SimpleDoubleProperty();
     private final DoubleProperty mControlDirX2=new SimpleDoubleProperty();
-    private final DoubleProperty mControlDirY2=new SimpleDoubleProperty(); 
-     
-     
-     
-    @FXML
+    private final DoubleProperty mControlDirY2=new SimpleDoubleProperty();
+    
+     @FXML
     private CubicCurve curve;
-   
-    void setModel(DotJobEdgeModel item) {
+
+    
+
+    void setModel(ParentChildEdgeModel item) {
         model=item;
-        dotmodel=model.getDotModel();
-        anchorModel=model.getAnchorModel();
+        childAnchorModel=model.getChildAnchorModel();
+       
+    }
+
+    void setView(ParentChildEdgeView nd, BoxNode parentBoxNode, AnchorPane interactivePane) {
+        node=nd;
+        this.boxnode=parentBoxNode;
+        this.interactivePane=interactivePane;
         
+        childAnchor=new AnchorNode(childAnchorModel, this.interactivePane);
+        
+        curve=createStartingCurve();
+        
+        curve.startXProperty().bind(this.boxnode.layoutXProperty());
+        curve.startYProperty().bind(this.boxnode.layoutYProperty());
+        curve.endXProperty().bind(childAnchor.centerXProperty());
+        curve.endYProperty().bind(childAnchor.centerYProperty());
+        curve.setMouseTransparent(true);
+        constraintCurve();
+        overrideAnchorBehaviour();
+        
+        
+        
+        node.getChildren().add(0,curve);
+        node.getChildren().add(0,childAnchor);
+        this.interactivePane.getChildren().add(node);
         
     }
     
-    void setView(DotJobEdgeView nd,DotView commonDot,AnchorPane interactivePane) {
-        
-        node=nd;
-        this.interactivePane=interactivePane;
-                
-     
-        
-        anchor=new AnchorNode(anchorModel,this.interactivePane);
-//        dotnode=new DotView(dotmodel);
-        this.interactivePane=interactivePane;
-        dotnode=commonDot;
-        
-        
-        
-        
-        curve=createStartingCurve();
-       
-        
-        curve.startXProperty().bind(dotnode.centerXProperty());
-        curve.startYProperty().bind(dotnode.centerYProperty());
-        curve.endXProperty().bind(anchorModel.getX());
-        curve.endYProperty().bind(anchorModel.getY());
-        //curve.setMouseTransparent(true);
-        constraintCurve();
-        overrideAnchorBehaviour();
-      
-        
-        node.getChildren().add(0,curve);
-        node.getChildren().add(0,anchor);
-        //node.getChildren().add(dotnode);
-        this.interactivePane.getChildren().add(node);
-       
-        
-    }
     
     private CubicCurve createStartingCurve() {
         //CubicCurve curve = new CubicCurve();
@@ -108,16 +98,22 @@ public class DotJobEdgeController {
         curve.setControlY2(50);
         curve.setEndX(350);
         curve.setEndY(150);
-        curve.setStroke(Color.RED);
+        curve.setStroke(Color.FORESTGREEN);
         curve.setStrokeWidth(4);
         curve.setStrokeLineCap(StrokeLineCap.ROUND);
-       // curve.setFill(Color.CORNSILK.deriveColor(0, 1.2, 1, 0.6));
+        curve.setFill(Color.CORNSILK.deriveColor(0, 1.2, 1, 0.6));
         return curve;
+    }
+
+    public ParentChildEdgeModel getModel() {
+        return this.model;
     }
     
     
-       /**
-     * We do this to have similar behavior as the parentchildjobedges
+    /**
+     * We do this so that the Dots position lies on the midpoint of the curves start and end x,y coords
+     * The alternative is to find the curves points of inflection. and bind the Dots position to it.
+     * https://pomax.github.com/bezierinfo/
      */
     private void constraintCurve() {
         /**Curve Constraint Begin
@@ -171,8 +167,8 @@ public class DotJobEdgeController {
          */
         
     }
-    
-      /**
+
+    /**
      * Override the behaviour of the childanchor. 
      * The node needs to go to the top of the parent pane.(the AnchorPane interactivePane).
      * This is inorder to address the z-ordering of the boxes and the anchors.
@@ -181,17 +177,17 @@ public class DotJobEdgeController {
      */
     private void overrideAnchorBehaviour() {
         
-        anchor.setOnMouseDragged(e->{
+        childAnchor.setOnMouseDragged(e->{
            
             node.toBack();              ///overriden statement
-            //System.out.println("anchor.DotJobEdgeController.setView() Mouse Dragged");
+           // System.out.println("anchor.ParentChildEdgeController.setView() Mouse Dragged");
             double newX=e.getX()+dragDelta.x;
-            if(newX>0 && newX<DotJobEdgeController.this.interactivePane.getScene().getWidth()){
-                anchor.setCenterX(newX);
+            if(newX>0 && newX<ParentChildEdgeController.this.interactivePane.getScene().getWidth()){
+                childAnchor.setCenterX(newX);
             }
         double newY=e.getY()+dragDelta.y;
-            if(newY>0 && newY<DotJobEdgeController.this.interactivePane.getScene().getHeight()){
-                anchor.setCenterY(newY);
+            if(newY>0 && newY<ParentChildEdgeController.this.interactivePane.getScene().getHeight()){
+                childAnchor.setCenterY(newY);
             }
             
            e.consume();
@@ -199,7 +195,7 @@ public class DotJobEdgeController {
         });
         
         
-        anchor.setOnMouseReleased(e->{
+        childAnchor.setOnMouseReleased(e->{
            if(!node.getDropReceived()){
                node.toFront();
                node.requestFocus();
@@ -209,13 +205,11 @@ public class DotJobEdgeController {
         
     }
 
-    public DotJobEdgeModel getModel() {
-        return model;
+    public CubicCurve getCurve() {
+        return this.curve;
     }
     
-    
-    
-       private class Delta{
+      private class Delta{
         double x,y;
     }
 }

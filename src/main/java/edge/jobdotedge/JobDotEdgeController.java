@@ -9,7 +9,7 @@ import anchor.AnchorModel;
 import anchor.AnchorNode;
 import boxes.BoxNode;
 import dot.DotModel;
-import dot.DotNode;
+import dot.DotView;
 import javafx.fxml.FXML;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
@@ -29,7 +29,7 @@ public class JobDotEdgeController{
     private JobDotEdgeModel model;
     private JobDotEdgeNode node;
     private DotModel dotmodel;
-    private DotNode dotnode;
+    private DotView dotnode;
     private AnchorModel anchorModel;
     private AnchorNode anchor;
     
@@ -55,7 +55,7 @@ public class JobDotEdgeController{
         anchorModel.getY().bind(this.boxnode.layoutYProperty());*/
         
         anchor=new AnchorNode(anchorModel,this.interactivePane);
-        dotnode=new DotNode(dotmodel,this.interactivePane);
+        dotnode=new DotView(dotmodel,this.interactivePane);
         
         
         

@@ -6,7 +6,7 @@
 package edge.dotjobedge;
 
 import boxes.BoxNode;
-import dot.DotNode;
+import dot.DotView;
 import java.io.IOException;
 import java.net.URL;
 import javafx.fxml.FXMLLoader;
@@ -17,16 +17,17 @@ import javafx.scene.layout.AnchorPane;
  *
  * @author sharath nair <sharath.nair@polarcus.com>
  */
-public class DotJobEdgeNode extends AnchorPane{
+public class DotJobEdgeView extends AnchorPane{
      private  DotJobEdgeModel model;
     private DotJobEdgeController  controller;
     private AnchorPane interactivePane;
     
      private FXMLLoader fXMLLoader;
     private final URL location;
+    private boolean dropReceived;
     
     
-    public DotJobEdgeNode(DotJobEdgeModel item,DotNode commonDot,AnchorPane interactivePane){
+    public DotJobEdgeView(DotJobEdgeModel item,DotView commonDot,AnchorPane interactivePane){
         this.location=getClass().getClassLoader().getResource("fxml/dotjobedge.fxml"); 
        this.interactivePane=interactivePane;
           
@@ -54,5 +55,20 @@ public class DotJobEdgeNode extends AnchorPane{
                 throw new RuntimeException(e);
             }
     }
+    
+    
+    
+     public void setDropReceived(boolean b) {
+        this.dropReceived = b;
+    }
+    
+    public boolean getDropReceived(){
+        return this.dropReceived;
+    }
+
+    public DotJobEdgeController getController() {
+        return controller;
+    }
+    
     
 }

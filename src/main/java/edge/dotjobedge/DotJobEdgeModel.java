@@ -15,9 +15,10 @@ import dot.DotModel;
  */
 public class DotJobEdgeModel {
     
-    BoxModel endBox;
-    DotModel dotModel;
-    AnchorModel anchorModel;
+   
+    DotModel dotModel;      //the dotmodel from which the link originates
+    BoxModel childBox;        //the child box on which the anchor will be dropped
+    AnchorModel anchorModel;    //the anchor to be dropped
 
     public DotModel getDotModel() {
         return dotModel;
@@ -38,12 +39,13 @@ public class DotJobEdgeModel {
         this.anchorModel = anchorModel;
     }
 
-    public BoxModel getEndBox() {
-        return endBox;
+    public BoxModel getChildBox() {
+        return childBox;
     }
 
-    public void setEndBox(BoxModel endBox) {
-        this.endBox = endBox;
+    public void setChildBox(BoxModel childBox) {
+        this.childBox = childBox;
+        this.dotModel.addToChildren(this.childBox);
     }
     
     

@@ -5,6 +5,7 @@
  */
 package anchor;
 
+import boxes.BoxModel;
 import java.awt.Color;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -16,28 +17,12 @@ import javafx.beans.value.ObservableValue;
  * @author sharath nair <sharath.nair@polarcus.com>
  */
 public class AnchorModel {
+    
     Color color;
     DoubleProperty x=new SimpleDoubleProperty();
     DoubleProperty y=new SimpleDoubleProperty();
-
-    public AnchorModel() {
-        x.addListener(new ChangeListener<Number>(){
-            @Override
-            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                System.out.println("AnchorModel.changed() x: "+newValue);
-            }
-        });
-        
-        y.addListener(new ChangeListener<Number>(){
-            @Override
-            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                System.out.println("AnchorModel.changed() y: "+newValue);
-            }
-        });
-    }
     
-    
-
+   
     public Color getColor() {
         return color;
     }
@@ -61,6 +46,8 @@ public class AnchorModel {
     public void setY(DoubleProperty y) {
         this.y = y;
     }
+
+   
     
     
 }
